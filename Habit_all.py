@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 import os.path
 
 class Habit:
@@ -10,7 +10,7 @@ class Habit:
         self.periodicity = periodicity
         self.longest_streak = longest_streak
         self.current_streak = current_streak
-        self.last_update_date = None
+        self.last_update_date = last_update_date
 
     def __repr__(self):
         return f"Habit('{self.name}','{self.created_date}','{self.periodicity}')"
@@ -19,17 +19,30 @@ class Habit:
         self.log.append(date)
 
     def update_streak(self,date):
-        #checks if the current streak is longer than the stored longest streak, and updates accordingly
-        if self.last_update_date and (date - self.last_update_date).days ==1:
-            self.current_streak += 1
-        else:
-            self.current_streak = 1
-        
+        #checks if the habit is daily or weekly,and if it has been long enough since the last update to update again
+        if self.periodicity == "Daily":
+            if self.last_update_date and (date - self.last_update_date).days ==1:
+                self.current_streak += 1
+            else:
+                self.current_streak = 1
+        elif self.periodicity == "Weekly":
+            if self.last_update_date and (date - self.last_update_date).days ==7:
+                self.current_streak +=1
+            else:
+                self.current_streak = 1
+        #checks if the current streak is longer than the longest streak, and updates the longest streak if it is
         if self.current_streak > self.longest_streak:
             self.longest_streak = self.current_streak
-        
+        #sets the last update date to be the date of the update
         self.last_update_date = date
 
+    def check_streaks(self,date):
+        if self.periodicity == "Daily":
+            if self.last_update_date and (date - self.last_update_date).days > 1:
+                self.current_streak = 0
+        elif self.periodicity == "Weekly":
+            if self.last_update_date and (date - self.last_update_date).days > 7:
+                self.current_streak = 0
 
     def get_streak(self):
         #returns the current streak of the habit
@@ -37,7 +50,8 @@ class Habit:
 
     def habit_to_string(self):
         #returns a string with the details of the habit
-        return f"Habit: {self.name}, Created: {self.created_date}, Period: {self.periodicity}, Current streak: {self.current_streak}, Longest streak: {self.longest_streak}"
+        c_date = datetime.strftime(self.created_date,"%d-%m-%Y")
+        return f"Habit: {self.name}, Created: {c_date}, Period: {self.periodicity}, Current streak: {self.current_streak}, Longest streak: {self.longest_streak}"
 
     def get_name(self):
         #returns habit name
@@ -82,13 +96,13 @@ class Habit_UI:
 
     def view_habits_interval(self,habit_tracker):
         #prompts the user to input their chosen periodicity, and prints the data related to that chosen option
-        option = int(input("Please enter the number of the option you would like to choose:\n1. Daily\n2. Weekly\n\n"))
+        option = int(input("\n1. Daily\n2. Weekly\nPlease enter the number of the option you would like to choose: "))
 
         if option ==1:
-            print("Daily habits with the longest streak: \n\n"+habit_tracker.view_habits_interval("Daily")+"\n")
+            print("Daily habits: \n\n"+habit_tracker.view_habits_interval("Daily")+"\n")
 
         elif option ==2:
-            print("Weekly habits with the longest streak: \n\n"+habit_tracker.view_habits_interval("Weekly")+"\n")
+            print("Weekly habits: \n\n"+habit_tracker.view_habits_interval("Weekly")+"\n")
 
         else:
             print("Please select a valid option")
@@ -113,7 +127,7 @@ class Habit_UI:
         if names is None:
             print("No habits exist\n")
         else: 
-            choice = input(f"{names}\nPlease enter the habit name: ")
+            choice = input(f"{names}\nPlease enter the number of the habit you would like to choose: ")
             #print the details of the chosen habit
             print("\nDetails of the habit: "+habit_tracker.view_specific_habit(choice)+"\n") 
 
@@ -160,8 +174,9 @@ class Habit_Tracker:
             self.habits.append(Habit(data[0],datetime.strptime(data[1],"%Y-%m-%d %H:%M:%S.%f"),data[2],data[3],data[4],datetime.strptime(data[5],"%Y-%m-%d %H:%M:%S.%f")))
         for habit in self.habits:
             #updates all habits to make sure streaks are correctly stored
+            habit.check_streaks(datetime.now())
             habit.update_longest_streak()
-
+            
     def add_habit(self,habit_name: str,periodicity: str):
         #adds habit data to the array of habits
         self.habits.append(Habit(habit_name,datetime.now(),periodicity,0,0, datetime.now()))
