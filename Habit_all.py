@@ -208,13 +208,13 @@ class Habit_Tracker:
 
     def view_specific_habit(self,choice):
         index = int(choice) - 1
-        #loops through the habits list to find the position of the one that corresponds to the chosen number, then returns the data of the habit in t he position
+        #Finds the position of the one that corresponds to the chosen number, then returns the data of the habit in t he position
         if index >=0 and index <len(self.habits):
             return self.habits[index].habit_to_string()
 
     def update_habit(self,choice):
         index = int(choice) - 1
-        #loops through the habits list to find the position of the corresponding habit, and updates the streak of the habit in the list, as well as in the database
+        #Finds the position of the corresponding habit, and updates the streak of the habit in the list, as well as in the database
         if index >=0 and index <len(self.habits):
             self.habits[index].update_streak(datetime.now())
             self.conn.cursor().execute("UPDATE habits SET current_streak = ?, last_update = ? WHERE name = ?", (self.habits[index].get_streak(),self.habits[index].get_last_update(),self.habits[index].get_name()))
@@ -222,7 +222,7 @@ class Habit_Tracker:
 
     def delete_habit(self,choice):
         index = int(choice) - 1
-        #loops through the list of habits to find the position of the chosen habit, and then deletes the habits data from the database, as well as from the list
+        #Finds the position of the chosen habit, and then deletes the habits data from the database, as well as from the list
         if index>=0 and index <len(self.habits):
             self.conn.cursor().execute("DELETE FROM habits WHERE name = ? AND periodicity = ?",(self.habits[index].get_name(),self.habits[index].get_periodicity()))
             self.conn.commit()
