@@ -1,4 +1,5 @@
 **Habit Tracker Application**
+
 **Overview**
 
 This is a simple Habit Tracking application written in Python 3.11.7. The application uses an SQLite3 database to store habit data. The data stored for each habit includes:
