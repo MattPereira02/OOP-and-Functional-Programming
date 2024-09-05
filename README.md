@@ -46,7 +46,7 @@ The application provides the following functions to manage and track habits:
 
   Run the Application:
 
-    python habit_tracker.py
+    python habit_ui.py
 
 Follow On-screen Instructions:
 
