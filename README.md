@@ -53,6 +53,13 @@ Follow On-screen Instructions:
     Choose options from the menu to perform various actions like creating, deleting, or updating habits.
     Enter data as prompted to interact with the application.
 
+**Testing**
+
+  Run test script:
+
+    pytest .
+    
+
 **Database Schema**
 
 The SQLite3 database has the following schema:
