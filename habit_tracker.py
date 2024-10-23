@@ -1,6 +1,6 @@
 import sqlite3
 from habit import Habit
-import datetime
+from datetime import datetime
 
 class Habit_Tracker:
     def __init__(self,db_string):
@@ -9,7 +9,7 @@ class Habit_Tracker:
 
     def create_table(self):
         self.conn.cursor().execute('''CREATE TABLE IF NOT EXISTS habits
-        (habitID INTEGER primary key not null, name TEXT, date_created TIMESTAMP, periodicity TEXT, longest_streak INTEGER, current_streak INTEGER, last_updated TIMESTAMP)''')
+        (habitID INTEGER primary key not null, name TEXT, date_created TIMESTAMP, periodicity TEXT, longest_streak INTEGER, current_streak INTEGER, last_update TIMESTAMP)''')
         self.conn.commit()
 
     def load_habits(self):
@@ -25,9 +25,10 @@ class Habit_Tracker:
             
     def add_habit(self,habit_name: str,periodicity: str):
         #adds habit data to the array of habits
-        self.habits.append(Habit(habit_name,datetime.now(),periodicity,0,0, datetime.now()))
+        current_date = datetime.now()
+        self.habits.append(Habit(habit_name,current_date,periodicity,0,0, current_date))
         #adds new habit to database
-        self.conn.cursor().execute("INSERT INTO habits (name,date_created,periodicity,longest_streak,current_streak,last_update) VALUES (?,?,?,?,?,?)", (habit_name, datetime.now(), periodicity, 0, 0, datetime.now()))
+        self.conn.cursor().execute("INSERT INTO habits (name,date_created,periodicity,longest_streak,current_streak,last_update) VALUES (?,?,?,?,?,?)", (habit_name, current_date, periodicity, 0, 0, current_date))
         self.conn.commit()
 
     def view_habits(self):
