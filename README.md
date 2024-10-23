@@ -57,7 +57,7 @@ Follow On-screen Instructions:
 
   Run test script:
 
-    pytest .
+    python TestHabit.py
     
 
 **Database Schema**
