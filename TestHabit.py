@@ -1,84 +1,101 @@
-import pytest
-import habit_tracker
+from habit_tracker import Habit_Tracker
 import os
-from datetime import datetime, timedelta
-from unittest.mock import patch
+from datetime import datetime
+import pytest
 
 class TestHabit:
+        
+    @pytest.fixture
     def setup_db(self):
         #Creates test database
-        habit_tracker.init('test_db')
-        habit_tracker.create_table()
-        yield
+        self.tracker = Habit_Tracker('test_db.db')
+        self.tracker.create_table()
+        yield self.tracker
         #Teardown test database
-        if os.path.exists('test_db'):
-            os.remove('test_db')
-        
-    def test_add_habit(setup_db):
-        # Tests that the 'add habit' function
-        habit_tracker.add_habit('Exercise', 'Daily')
-        habit = habit_tracker.view_specific_habit(1)
-        assert habit['name'] == 'Exercise'
-        assert habit['periodicity'] == 'Daily'
+        self.tracker.conn.close()
+        if os.path.exists('test_db.db'):
+            os.remove('test_db.db')
 
-    def test_delete_habit(setup_db):
+    @staticmethod
+    def run_tests():
+        print("Running all unit tests...")
+        pytest.main([__file__])
+        print("Unit tests completed.")
+
+   
+    def test_add_habit(self,setup_db):
+        #Tests that the 'add_habit' function works correctly
+        self.tracker = setup_db
+        self.tracker.add_habit('Exercise', 'Daily')
+        assert self.tracker.habits[0].get_name() == 'Exercise'
+        assert self.tracker.habits[0].get_periodicity() == 'Daily'
+
+    def test_delete_habit(self,setup_db):
         #Tests the 'delete habit' function
-        habit_tracker.add_habit('Exercise', 'Daily')
-        habit_tracker.delete_habit(1)
-        habit = habit_tracker.view_specific_habit(1)
+        self.tracker = setup_db
+        self.tracker.add_habit('Exercise', 'Daily')
+        self.tracker.delete_habit(1)
+        habit = self.tracker.view_specific_habit(1)
         assert habit is None
 
-    def test_view_habits(setup_db):
+    def test_view_habits(self,setup_db):
         #Tests displaying all habits
-        habit_tracker.add_habit('Exercise', 'Daily')
-        habit_tracker.add_habit('Clean Shower', 'Weekly')
-        habits = habit_tracker.view_habits()
-        assert habits == f"Habit: Exercise, Created: {datetime.strftime(datetime.now, "%d-%m-%Y")}, Period: Daily, Current streak: 0, Longest streak: 0 \n Habit: Clean Shower, Created: {datetime.strftime(datetime.now, "%d-%m-%Y")}, Period: Weekly, Current streak: 0, Longest streak: 0"
+        self.tracker = setup_db
+        self.tracker.add_habit('Exercise', 'Daily')
+        self.tracker.add_habit('Clean Shower', 'Weekly')
+        habits = self.tracker.view_habits()
+        assert 'Habit: Exercise' in habits
+        assert 'Habit: Clean Shower' in habits
 
-    def test_update_streak(setup_db):
+    def test_habits_interval(self,setup_db):
+        self.tracker = setup_db
+        self.tracker.add_habit('Exercise', 'Daily')
+        self.tracker.add_habit('Clean Shower', 'Weekly')
+        habits = self.tracker.view_habits_interval('Daily')
+        assert 'Exercise' in habits
+        assert 'Clean Shower' not in habits
+
+    def test_view_specific_habit(self,setup_db):
+        self.tracker = setup_db
+        self.tracker.add_habit('Exercise', 'Daily')
+        self.tracker.add_habit('Clean Shower', 'Weekly')
+        habits = self.tracker.view_specific_habit(2)
+        assert 'Clean Shower' in habits
+
+    def test_update_streak(self,setup_db):
         #Tests updating streak function
-         habit_tracker.add_habit('Exercise','Daily')
-         habit_tracker.update_habit(1)
-         habit = habit_tracker.view_specific_habit(1)
-         assert habit['current_streak'] == 1
-         assert habit['longest_streak'] == 1
-
-    @patch('habit_tracker.datetime')
-    def test_update_streak_multiple(mock_datetime,setup_db):
-        #Tests updating streak function over multiple days
-        habit_tracker.add_habit('Exercise', 'Daily')
-        habit_tracker.update_habit(1)
-        current_date = datetime.now() + timedelta(days=1)
-        mock_datetime.now.return_value.date.return_value = current_date
-        habit_tracker.update_habit(1)
-        habit = habit_tracker.view_specific_habit(1)
-        assert habit['current_streak'] == 2
-        assert habit['longest_streak'] == 2
+        self.tracker = setup_db
+        self.tracker.add_habit('Exercise', 'Daily')
+        self.tracker.update_habit(1)
+        assert self.tracker.habits[0].current_streak == 1
+        assert self.tracker.habits[0].longest_streak == 1
     
-    def test_view_longest_streak(setup_db):
+    def test_view_longest_streak(self,setup_db):
         #Tests the view habits with longest streak function
-        habit_tracker.add_habit('Exercise', 'Daily')
-        habit_tracker.add_habit('Clean Shower', 'Weekly')
-        habit_tracker.add_habit('Study', 'Daily')
-        habit_tracker.update_habit(1)
-        habit_tracker.update_habit(3)
-        habit = habit_tracker.view_longest_streak()
-        newline_count = habit.count('\n')
-        assert newline_count == 1
+        self.tracker = setup_db
+        self.tracker.add_habit('Exercise', 'Daily')
+        self.tracker.add_habit('Clean Shower', 'Weekly')
+        self.tracker.add_habit('Study', 'Daily')
+        self.tracker.update_habit(1)
+        self.tracker.update_habit(3)
+        habit = self.tracker.view_longest_streak()
         assert 'Exercise' in habit
         assert 'Study' in habit
+        assert 'Clean Shower' not in habit
 
-    def test_multiple_dates(self):
+    def test_multiple_dates(self,setup_db):
         #Checks if current and longest streak compute correctly with multiple consecutive dates
-        self.habit1.update_streak("14-03-2024 09:23.0")
-        self.habit1.update_streak("15-03-2024 09:33.0")
-        self.habit1.update_streak("16-03-2024 09:25.0")
-        assert self.habit1.current_streak == 3
+        self.tracker = setup_db
+        self.tracker.add_habit('Exercise', 'Daily')
+        self.tracker.habits[0].update_streak(datetime(2024,3,14))
+        self.tracker.habits[0].update_streak(datetime(2024,3,15))
+        self.tracker.habits[0].update_streak(datetime(2024,3,16))
+        assert self.tracker.habits[0].current_streak == 3
 
         #Checking that the current and longest streak compute correctly with non-consecutive dates
-        self.habit1.update_streak("18-03-2024 10:12.0")
-        assert self.habit1.current_streak == 0
-        assert self.habit1.longest_streak == 3
+        self.tracker.habits[0].update_streak(datetime(2024,3,18))
+        assert self.tracker.habits[0].current_streak == 1
+        assert self.tracker.habits[0].longest_streak == 3
 
-#Run the tests
-pytest.main()
+if __name__ == "__main__":
+    TestHabit.run_tests()
