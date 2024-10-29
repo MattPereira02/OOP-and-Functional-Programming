@@ -56,7 +56,7 @@ class Habit_UI:
         #displays the names of all habits to the user, and then prompts them to input the number of the habit they would like to view
         names = tracker.view_habit_names()
         if names is None:
-            print("No habits exist\n")
+            print("No habits found\n")
         else: 
             choice = input(f"{names}\nPlease enter the number of the habit you would like to choose: ")
             #print the details of the chosen habit
@@ -67,7 +67,7 @@ class Habit_UI:
         #displays the names of all habits to the user, and then prompts them to input the number of the habit they would like to view
         names = tracker.view_habit_names()
         if names is None:
-            print("No habits exist\n")
+            print("No habits found\n")
         else:
             choice = input(f"{names}\n\nPlease enter the number of the habit you would like the update the streak of: ")
             #updates the details of the chosen habit
@@ -79,7 +79,7 @@ class Habit_UI:
         #displays the names of all habits to the user, and then prompts them to input the number of the habit they would like to view
         names = tracker.view_habit_names()
         if names is None:
-            print("No habits exist\n")
+            print("No habits found\n")
         else:
             choice = input(f"{names}\n\nPlease enter the number of the habit you would like to delete: ")
             #deletes the chosen habit from the database
