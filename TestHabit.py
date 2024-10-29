@@ -35,8 +35,7 @@ class TestHabit:
         self.tracker = setup_db
         self.tracker.add_habit('Exercise', 'Daily')
         self.tracker.delete_habit(1)
-        habit = self.tracker.view_specific_habit(1)
-        assert habit is None
+        assert len(self.tracker.habits) == 0
 
     def test_view_habits(self,setup_db):
         #Tests displaying all habits
