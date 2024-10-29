@@ -32,45 +32,66 @@ class Habit_Tracker:
         self.conn.commit()
 
     def view_habits(self):
-        #returns a string of the details of all habits
-        return "\n".join([f"{i+1}. {habit.habit_to_string()}" for i, habit in enumerate(self.habits)])
+        if len(self.habits) == 0:
+            return "No habits found"
+        else:
+            #returns a string of the details of all habits
+            return "\n".join([f"{i+1}. {habit.habit_to_string()}" for i, habit in enumerate(self.habits)])
 
     def view_habit_names(self):
         #returns the names of all habits
-        return "\n".join([f"{i+1}. {habit.get_name()}" for i, habit in enumerate(self.habits)])
+        if len(self.habits) == 0:
+            return None
+        else:
+            return "\n".join([f"{i+1}. {habit.get_name()}" for i, habit in enumerate(self.habits)])
 
     def view_longest_streak(self):
         #searches through all habits to find what the longest streak is
-        longest_streak_length = max(habit.get_streak() for habit in self.habits)
-        #searches through all habits to find the ones that have a streak equal to the longest streak
-        longest_streak_habits = filter(lambda habit: habit.get_streak() == longest_streak_length, self.habits)
-        #returns a string of all habits with the longest streak
-        return '\n'.join(map(lambda habit: habit.habit_to_string(),longest_streak_habits))
+        if len(self.habits) == 0:
+            return "No habits found"
+        else:
+            longest_streak_length = max(habit.get_streak() for habit in self.habits)
+            #searches through all habits to find the ones that have a streak equal to the longest streak
+            longest_streak_habits = filter(lambda habit: habit.get_streak() == longest_streak_length, self.habits)
+            #returns a string of all habits with the longest streak
+            return '\n'.join(map(lambda habit: habit.habit_to_string(),longest_streak_habits))
 
     def view_habits_interval(self,periodicity):
-            #searches through all habits to find the ones with periodicity equal to the one chosen by the user
-        filtered_habits = filter(lambda habit: habit.get_periodicity() == periodicity, self.habits)
-            #returns a string with all the habits of the chosen periodicity
-        return '\n'.join(map(lambda habit: habit.habit_to_string(), filtered_habits))
+        if len(self.habits) == 0:
+            return "No habits found"
+        else:
+                #searches through all habits to find the ones with periodicity equal to the one chosen by the user
+            filtered_habits = filter(lambda habit: habit.get_periodicity() == periodicity, self.habits)
+                #returns a string with all the habits of the chosen periodicity
+            return '\n'.join(map(lambda habit: habit.habit_to_string(), filtered_habits))
 
     def view_specific_habit(self,choice):
-        index = int(choice) - 1
-        #Finds the position of the one that corresponds to the chosen number, then returns the data of the habit in t he position
-        if index >=0 and index <len(self.habits):
-            return self.habits[index].habit_to_string()
+        if len(self.habits) == 0:
+            return "No habits found"
+        else:
+            index = int(choice) - 1
+            #Finds the position of the one that corresponds to the chosen number, then returns the data of the habit in t he position
+            if index >=0 and index <len(self.habits):
+                return self.habits[index].habit_to_string()
 
     def update_habit(self,choice):
-        index = int(choice) - 1
-        #Finds the position of the corresponding habit, and updates the streak of the habit in the list, as well as in the database
-        if index >=0 and index <len(self.habits):
-            self.habits[index].update_streak(datetime.now())
-            self.conn.cursor().execute("UPDATE habits SET current_streak = ?, last_update = ? WHERE name = ?", (self.habits[index].get_streak(),self.habits[index].get_last_update(),self.habits[index].get_name()))
-            self.conn.commit()
+        if len(self.habits) == 0:
+            return "No habits found"
+        else:
+            index = int(choice) - 1
+            #Finds the position of the corresponding habit, and updates the streak of the habit in the list, as well as in the database
+            if index >=0 and index <len(self.habits):
+                self.habits[index].update_streak(datetime.now())
+                self.conn.cursor().execute("UPDATE habits SET current_streak = ?, last_update = ? WHERE name = ?", (self.habits[index].get_streak(),self.habits[index].get_last_update(),self.habits[index].get_name()))
+                self.conn.commit()
 
     def delete_habit(self,choice):
-        index = int(choice) - 1
-        #Finds the position of the chosen habit, and then deletes the habits data from the database, as well as from the list
-        if index>=0 and index <len(self.habits):
-            self.conn.cursor().execute("DELETE FROM habits WHERE name = ? AND periodicity = ?",(self.habits[index].get_name(),self.habits[index].get_periodicity()))
-            self.conn.commit()
-            del self.habits[index]
+        if len(self.habits) == 0:
+            return "No habits found"
+        else:
+            index = int(choice) - 1
+            #Finds the position of the chosen habit, and then deletes the habits data from the database, as well as from the list
+            if index>=0 and index <len(self.habits):
+                self.conn.cursor().execute("DELETE FROM habits WHERE name = ? AND periodicity = ?",(self.habits[index].get_name(),self.habits[index].get_periodicity()))
+                self.conn.commit()
+                del self.habits[index]
